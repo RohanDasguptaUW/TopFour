@@ -1,184 +1,106 @@
-# Film Worldview Recommender
+# TopFour
 
-A film recommendation engine that matches based on **philosophical alignment and formal discipline**, not genre or cast.
+A film recommendation engine that matches based on **worldview, technique, and aesthetic philosophy** — not genre, cast, or plot similarity.
 
-Instead of "you watched *Taxi Driver*, so you'll like *Joker*" (both have isolated protagonists), this agent asks: *Does the film share the same worldview, aesthetic rigor, and rejection of sentimentality?*
+## The Problem
 
-## Vision
+Most film recommenders are shallow. They match on surface-level features: "You watched a thriller, so here's another thriller." "You liked this actor, so here's their other films."
 
-Most recommenders are shallow: they match on plot, genre, cast, or surface-level similarity. This one is **critical and analytical**:
+But meaningful recommendations require deeper understanding. Two films might both feature isolated protagonists, but one is a character study about moral ambiguity while the other is melodrama dressed as depth. One uses formal rigor as philosophical statement; the other uses it as style.
 
-- **Analyzes** a film's core worldview, technique, and philosophical stance
-- **Matches** on thematic/structural alignment, not superficial features
-- **Explains** why recommendations work, not just listing them
-- **Learns** as you use it (every film analyzed improves future matching)
+## The Solution
 
-## Architecture
+**TopFour** analyzes what films *actually believe* — their worldview, technique, philosophical stance — and matches on that basis.
 
+Instead of matching one film at a time, TopFour uses your **Top 4 favorite films** to build a profile of your taste. It extracts the common threads: What worldviews appeal to you? What techniques matter? What do you reject? Then it finds films that align with that taste DNA.
+
+## How It Works
+
+1. **Input your Top 4 films** (incrementally)
+2. **System analyzes each** with your input (open-ended clarifying questions)
+3. **Generates a taste profile** (poetic description + clinical breakdown)
+4. **Get recommendations** based on taste alignment (not individual film matching)
+5. **Rate recommendations** with structured feedback
+6. **System suggests** adding highly-aligned films to your Top 4
+
+Example recommendation output:
 ```
-┌─────────────────────────────────────────────────────────┐
-│ User Input: "Recommend based on Dead Man"              │
-└────────────────┬────────────────────────────────────────┘
-                 │
-┌────────────────▼────────────────────────────────────────┐
-│ Film Data Fetcher                                       │
-│ (IMDb, Wikipedia, user input)                          │
-└────────────────┬────────────────────────────────────────┘
-                 │
-┌────────────────▼────────────────────────────────────────┐
-│ Analysis Agent (Claude API)                            │
-│ Decomposes: worldview, technique, tone, philosophy     │
-└────────────────┬────────────────────────────────────────┘
-                 │
-┌────────────────▼────────────────────────────────────────┐
-│ Analysis Cache (JSON/SQLite)                           │
-│ Stores films + their decompositions                    │
-└────────────────┬────────────────────────────────────────┘
-                 │
-┌────────────────▼────────────────────────────────────────┐
-│ Matching Agent                                          │
-│ Semantic similarity + rejection alignment              │
-└────────────────┬────────────────────────────────────────┘
-                 │
-┌────────────────▼────────────────────────────────────────┐
-│ Recommendation Agent                                    │
-│ Ranks + explains recommendations                       │
-└─────────────────────────────────────────────────────────┘
+Based on your taste profile, [Film X] aligns 89%
+
+Connects through:
+✓ Shares worldview on moral ambiguity without resolution
+✓ Uses observational technique over exposition
+✓ Refuses narrative convenience
+✓ Formal discipline as philosophical stance
 ```
 
-## Project Structure
+## Why This Matters
 
-```
-film-recommender/
-├── README.md
-├── requirements.txt
-├── .env.example
-├── .gitignore
-├── src/
-│   ├── __init__.py
-│   ├── main.py                 # CLI entry point
-│   ├── agents/
-│   │   ├── __init__.py
-│   │   ├── analyzer.py         # Film analysis (Claude API)
-│   │   ├── matcher.py          # Find aligned films
-│   │   └── recommender.py      # Generate recommendations
-│   ├── data/
-│   │   ├── __init__.py
-│   │   ├── fetcher.py          # Get film data (IMDb, Wikipedia, etc.)
-│   │   ├── storage.py          # Persistent cache (films.json)
-│   │   └── films.json          # Local film database
-│   ├── utils/
-│   │   ├── __init__.py
-│   │   └── config.py           # Config + API keys
-│   └── lib/
-│       ├── __init__.py
-│       └── semantic.py         # Semantic matching logic
-├── tests/
-│   ├── __init__.py
-│   ├── test_analyzer.py
-│   └── test_matcher.py
-└── .claude-code.json           # Claude Code config
-```
+- **Deeper matching**: Based on what films *believe*, not what they look like
+- **Explainable**: Every recommendation comes with reasoning you can evaluate
+- **Personalized**: Learns from your feedback (what you agree/disagree with)
+- **Evolving**: Your taste profile improves as you interact with the system
 
-## Key Design Decisions
+## Project Status
 
-### 1. **Persistent Film Cache**
-Every film analyzed gets stored locally (JSON). This means:
-- Faster subsequent queries
-- System learns and improves over time
-- Can see your recommendation history
+**Phase 1 (In Development):**
+- Top 4 onboarding with clarifying questions
+- Taste profile generation (poetic + clinical)
+- Taste-based film matching
+- Structured recommendation feedback
+- Suggestion system for Top 4 updates
 
-### 2. **Claude API for Analysis**
-Instead of hardcoded film descriptions, use Claude to analyze:
-- What makes a film's worldview unique?
-- What techniques does it use?
-- What does it explicitly reject?
+**Phase 2 (Planned):**
+- User accounts
+- Shared film database
+- Collaborative filtering (find users with similar taste)
+- Public profiles
 
-This scales to any film, not just your personal taste.
+## Tech Stack
 
-### 3. **Semantic Matching**
-Match films based on:
-- **Worldview categories** (isolation/alienation, discipline/code, decay, corruption, etc.)
-- **Tone alignment** (formal distance, emotional register)
-- **Rejection overlap** (both reject sentimentality? easy answers? character growth?)
-
-### 4. **Interactive CLI**
-Simple interface:
-```bash
-python -m src.main
-> Recommend based on: Taxi Driver
-> Top N recommendations: 3
-```
-
-## TODO
-
-- [ ] Basic CLI structure
-- [ ] Film data fetcher (start with manual descriptions)
-- [ ] Analysis agent (Claude API integration)
-- [ ] Matching algorithm (semantic + rejection alignment)
-- [ ] Persistent storage (JSON-based cache)
-- [ ] Recommendation generation + explanation
-- [ ] Tests
-- [ ] Documentation
+- **Python** — Core logic
+- **Claude API** — Film analysis and taste profile generation
+- **JSON** — Persistent storage
+- **CLI** — User interface (Web UI later)
 
 ## Setup
 
 ```bash
-# Clone
-git clone <repo>
-cd film-recommender
-
-# Install
+git clone https://github.com/RohanDasguptaUW/TopFour.git
+cd TopFour
+python -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
-
-# Configure
 cp .env.example .env
 # Add your ANTHROPIC_API_KEY
-
-# Run
 python -m src.main
 ```
 
-## Example Usage
+## Architecture
 
 ```
-> Recommend based on: Dead Man
-> Top N recommendations: 3
-
-[Analyzing Dead Man...]
-Philosophy: Life is about witnessing and enduring, not achieving.
-Technique: Desaturated visuals, static composition, spare dialogue
-Tone: Deadpan, elegiac, unsentimental
-
-[Finding aligned films...]
-
-1. Le Samouraï (87% alignment)
-   Both refuse sentimentality. Both use long stretches of visual observation.
-   Both treat death not as climax but as the underlying condition.
-   
-2. No Country for Old Men (78% alignment)
-   Both present a world where the system is rigged and moral clarity is impossible.
-   Both end with refusal of narrative satisfaction.
-   
-3. Chinatown (72% alignment)
-   Both explore how corruption is foundational, not exceptional.
-   Both feature protagonists who fail despite competence.
+User Input (Top 4)
+  → Auto-fetch film data
+  → Analyze each film (worldview, technique, tone)
+  → Ask clarifying questions (refine understanding)
+  → Generate taste profile (poetic + clinical)
+  → Match against new films
+  → Show connections to Top 4
+  → Collect feedback (structured + free-form)
+  → Suggest additions to Top 4
 ```
 
-## Questions to Answer (via Claude Code)
+## Documentation
 
-1. **Data source**: Manual descriptions, IMDb scraping, or pure Claude-based analysis?
-2. **Matching sophistication**: Simple semantic categories or embeddings?
-3. **Scope**: Start with your taste, expand to user-submitted films?
-4. **Validation**: How do you test if recommendations are good?
+- **README.md** — This file (overview)
+- **TASKS.md** — Detailed development tasks
+- **CLAUDE_CODE.md** — Development workflow guide
 
-## Notes for Development
+## Contributing / Feedback
 
-- Use Claude Code for iterative development
-- Keep matching logic interpretable (explainable recommendations > black-box accuracy)
-- Prioritize depth over breadth (better analysis of 50 films > shallow analysis of 10k)
-- Test against your own judgment first
+This is currently a personal project. For Phase 2 (collaborative), contributing guidelines will be added.
 
----
+## License
 
-**This is a Claude Code project.** Use it to iterate, refactor, and build out the components.
+TBD
+
